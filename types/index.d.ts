@@ -17,13 +17,13 @@ enum Subject {
   business = "business",
 }
 
-type Companion = Models.DocumentList<Models.Document> & {
-  $id: string;
+type Companion = {
+  id: string;
   name: string;
   subject: Subject;
   topic: string;
   duration: number;
-  bookmarked: boolean;
+  bookmarked?: boolean; // Made optional since we're not using bookmarks
 };
 
 interface CreateCompanion {
@@ -64,7 +64,6 @@ interface Avatar {
   height: number;
   className?: string;
 }
-
 
 interface SavedMessage {
   role: "user" | "system" | "assistant";

@@ -1,4 +1,3 @@
-
 import {
     Table,
     TableBody,
@@ -19,6 +18,18 @@ interface CompanionsListProps {
 }
 
 const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) => {
+    // Deduplicate companions at component level as additional safeguard
+    const uniqueCompanions = companions ? (() => {
+        const seen = new Set();
+        return companions.filter(companion => {
+            if (seen.has(companion.id)) {
+                return false;
+            }
+            seen.add(companion.id);
+            return true;
+        });
+    })() : [];
+
     return (
         <article className={cn('companion-list', classNames)}>
             <h2 className="font-bold text-3xl">{title}</h2>
@@ -32,7 +43,7 @@ const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) 
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {companions?.map(({id, subject, name, topic, duration}) => (
+                    {uniqueCompanions.map(({id, subject, name, topic, duration}) => (
                         <TableRow key={id}>
                             <TableCell>
                                 <Link href={`/companions/${id}`}>

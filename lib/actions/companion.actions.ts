@@ -4,6 +4,18 @@ import {auth} from "@clerk/nextjs/server";
 import {createSupabaseClient} from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
+// Helper function to deduplicate companions by ID
+const deduplicateCompanions = (companions: any[]) => {
+    const seen = new Set();
+    return companions.filter(companion => {
+        if (seen.has(companion.id)) {
+            return false;
+        }
+        seen.add(companion.id);
+        return true;
+    });
+};
+
 export const createCompanion = async (formData: CreateCompanion) => {
     const { userId: author } = await auth();
     const supabase = createSupabaseClient();
@@ -38,7 +50,8 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 
     if(error) throw new Error(error.message);
 
-    return companions;
+    // Deduplicate companions before returning
+    return deduplicateCompanions(companions || []);
 }
 
 export const getCompanion = async (id: string) => {
@@ -78,7 +91,10 @@ export const getRecentSessions = async (limit = 10) => {
 
     if(error) throw new Error(error.message);
 
-    return data.map(({ companions }) => companions);
+    const companions = data.map(({ companions }) => companions).filter(Boolean);
+    
+    // Deduplicate companions before returning
+    return deduplicateCompanions(companions);
 }
 
 export const getUserSessions = async (userId: string, limit = 10) => {
@@ -92,7 +108,10 @@ export const getUserSessions = async (userId: string, limit = 10) => {
 
     if(error) throw new Error(error.message);
 
-    return data.map(({ companions }) => companions);
+    const companions = data.map(({ companions }) => companions).filter(Boolean);
+    
+    // Deduplicate companions before returning
+    return deduplicateCompanions(companions);
 }
 
 export const getUserCompanions = async (userId: string) => {
@@ -104,7 +123,8 @@ export const getUserCompanions = async (userId: string) => {
 
     if(error) throw new Error(error.message);
 
-    return data;
+    // Deduplicate companions before returning
+    return deduplicateCompanions(data || []);
 }
 
 export const newCompanionPermissions = async () => {
